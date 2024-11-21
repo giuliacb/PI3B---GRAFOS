@@ -21,6 +21,11 @@ public class FILMES {
                 String generosBrutos = values[1].replaceAll("[\\[\\]'\"]", "").trim();
                 String elencoBruto = values[12].replaceAll("[\\[\\]'\"]", "").trim();
 
+                if (titulo.isEmpty() || generosBrutos.isEmpty() || elencoBruto.isEmpty()) {
+                    System.err.println("Dados mal formatados: " + Arrays.toString(values));
+                    continue;
+                }
+
                 Set<String> generos = new HashSet<>(Arrays.asList(generosBrutos.split(",\\s*")));
                 Set<String> elenco = new HashSet<>(Arrays.asList(elencoBruto.split(",\\s*")));
 
@@ -92,9 +97,12 @@ public class FILMES {
                         contadorAtores.put(ator, bfsContarParticipacoes(grafo, ator, generoEscolhido, filmesGeneros));
                     }
 
-                    // Ordenar atores por participações
+                    // Ordenar atores por participações com desempate alfabético
                     List<Map.Entry<String, Integer>> listaOrdenada = new ArrayList<>(contadorAtores.entrySet());
-                    listaOrdenada.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+                    listaOrdenada.sort((a, b) -> {
+                        int cmp = b.getValue().compareTo(a.getValue());
+                        return cmp != 0 ? cmp : a.getKey().compareTo(b.getKey());
+                    });
 
                     // Salvar resultados em um arquivo
                     String arquivoSaida = "resultado_" + generoEscolhido + ".txt";
@@ -126,7 +134,6 @@ public class FILMES {
         Set<String> visitados = new HashSet<>();
         Queue<String> fila = new LinkedList<>();
         fila.add(ator);
-        visitados.add(ator);
 
         int participacoes = 0;
 
@@ -135,13 +142,12 @@ public class FILMES {
 
             for (String vizinho : grafo.get(atual)) {
                 if (!visitados.contains(vizinho)) {
-                    visitados.add(vizinho);
-                    fila.add(vizinho);
-                    
                     // Se o vizinho é um filme e pertence ao gênero, conta
                     if (filmesGeneros.containsKey(vizinho) && filmesGeneros.get(vizinho).contains(genero)) {
                         participacoes++;
                     }
+                    visitados.add(vizinho); // Marca como visitado
+                    fila.add(vizinho);     // Adiciona à fila para visitar
                 }
             }
         }
