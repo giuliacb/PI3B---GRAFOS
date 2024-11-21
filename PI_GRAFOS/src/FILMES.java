@@ -153,28 +153,34 @@ public class FILMES {
     }
 
     private static int bfsContarParticipacoes(Map<String, Set<String>> grafo, String ator, String genero,
-            Map<String, Set<String>> filmesGeneros) {
-        Set<String> visitados = new HashSet<>();
-        Queue<String> fila = new LinkedList<>();
-        fila.add(ator);
+                                          Map<String, Set<String>> filmesGeneros) {
+    Set<String> visitados = new HashSet<>();
+    Queue<String> fila = new LinkedList<>();
+    fila.add(ator);
 
-        int participacoes = 0;
+    int participacoes = 0;
 
-        while (!fila.isEmpty()) {
-            String atual = fila.poll();
-            for (String vizinho : grafo.get(atual)) {
-                if (!visitados.contains(vizinho)) {
-                    visitados.add(vizinho);
+    while (!fila.isEmpty()) {
+        String atual = fila.poll();
 
-                    // Contar apenas filmes pertencentes ao gênero
-                    if (filmesGeneros.containsKey(vizinho) && filmesGeneros.get(vizinho).contains(genero)) {
-                        participacoes++;
-                    }
+        // Evita processar o mesmo nó mais de uma vez
+        if (visitados.contains(atual)) {
+            continue;
+        }
+        visitados.add(atual);
 
-                    fila.add(vizinho);
-                }
+        for (String vizinho : grafo.get(atual)) {
+            // Processar apenas filmes conectados ao ator
+            if (filmesGeneros.containsKey(vizinho) && filmesGeneros.get(vizinho).contains(genero)) {
+                participacoes++;
+            }
+
+            // Adiciona apenas atores ao BFS, para evitar processar filmes mais de uma vez
+            if (!filmesGeneros.containsKey(vizinho)) {
+                fila.add(vizinho);
             }
         }
-        return participacoes;
     }
+    return participacoes;
+}
 }
